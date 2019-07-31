@@ -42,7 +42,7 @@
 #define SIZE             (32 * 1024 * 1024)
 #define BLOCKSIZE        2048
 #ifndef MAXREPEATS
-# define MAXREPEATS      10
+# define MAXREPEATS      5
 #endif
 #ifndef LATBENCH_COUNT
 # define LATBENCH_COUNT  10000000
@@ -93,7 +93,7 @@ static double bandwidth_bench_helper(int64_t *dstbuf, int64_t *srcbuf,
             }
             innerloopcount *= 2;
             t2 = gettime();
-        } while (t2 - t1 < 0.5);
+        } while (t2 - t1 < 0.25);
         speed = (double)size * loopcount / (t2 - t1) / 1000000.;
 
         s0 += 1;
@@ -106,6 +106,9 @@ static double bandwidth_bench_helper(int64_t *dstbuf, int64_t *srcbuf,
         if (s0 > 2)
         {
             s = sqrt((s0 * s2 - s1 * s1) / (s0 * (s0 - 1)));
+
+//          printf ("--- %8.1f MB/s (%.1f%%) \n", maxspeed, s / maxspeed * 100);
+
             if (s < maxspeed / 1000.)
                 break;
         }
