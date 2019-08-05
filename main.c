@@ -484,14 +484,14 @@ int main(void)
     printf("==         brackets                                                     ==\n");
     printf("==========================================================================\n\n");
 
-    bandwidth_bench(dstbuf, srcbuf, tmpbuf, bufsize, BLOCKSIZE, " ", c_benchmarks);
-    printf(" ---\n");
     bandwidth_bench(dstbuf, srcbuf, tmpbuf, bufsize, BLOCKSIZE, " ", libc_benchmarks);
     bench_info *bi = get_asm_benchmarks();
     if (bi->f) {
         printf(" ---\n");
         bandwidth_bench(dstbuf, srcbuf, tmpbuf, bufsize, BLOCKSIZE, " ", bi);
     }
+    bandwidth_bench(dstbuf, srcbuf, tmpbuf, bufsize, BLOCKSIZE, " ", c_benchmarks);
+    printf(" ---\n");
 
     free(poolbuf);
 
