@@ -136,6 +136,59 @@ void memset_wrapper(int64_t *dst, int64_t *src, int size)
     memset(dst, src[0], size);
 }
 
+#ifdef __arm__
+
+void *memset_glibc_stm2(void *s, int c, size_t n);
+void *memset_glibc_stm3(void *s, int c, size_t n);
+void *memset_glibc_stm4(void *s, int c, size_t n);
+void *memset_uclibc_stm2(void *s, int c, size_t n);
+void *memset_bionic_stm8(void *s, int c, size_t n);
+void *memset_lgi_stm4(void *s, int c, size_t n);
+void *memset_lgi_stm8(void *s, int c, size_t n);
+void *memset_raspbian_stm4(void *s, int c, size_t n);
+
+void memset_glibc_stm2_wrapper(int64_t *dst, int64_t *src, int size)
+{
+    memset_glibc_stm2(dst, src[0], size);
+}
+
+void memset_glibc_stm3_wrapper(int64_t *dst, int64_t *src, int size)
+{
+    memset_glibc_stm3(dst, src[0], size);
+}
+
+void memset_glibc_stm4_wrapper(int64_t *dst, int64_t *src, int size)
+{
+    memset_glibc_stm4(dst, src[0], size);
+}
+
+void memset_uclibc_stm2_wrapper(int64_t *dst, int64_t *src, int size)
+{
+    memset_uclibc_stm2(dst, src[0], size);
+}
+
+void memset_bionic_stm8_wrapper(int64_t *dst, int64_t *src, int size)
+{
+    memset_bionic_stm8(dst, src[0], size);
+}
+
+void memset_lgi_stm4_wrapper(int64_t *dst, int64_t *src, int size)
+{
+    memset_lgi_stm4(dst, src[0], size);
+}
+
+void memset_lgi_stm8_wrapper(int64_t *dst, int64_t *src, int size)
+{
+    memset_lgi_stm8(dst, src[0], size);
+}
+
+void memset_raspbian_stm4_wrapper(int64_t *dst, int64_t *src, int size)
+{
+    memset_raspbian_stm4(dst, src[0], size);
+}
+
+#endif
+
 static bench_info c_benchmarks[] =
 {
     { "C copy backwards", 0, aligned_block_copy_backwards },
@@ -156,8 +209,17 @@ static bench_info c_benchmarks[] =
 
 static bench_info libc_benchmarks[] =
 {
-    { "standard memcpy", 0, memcpy_wrapper },
+#ifdef __arm__
+    { "glibc memset (unmodified original stm2 version)", 0, memset_glibc_stm2_wrapper },
+    { "glibc memset (tweaked stm4)", 0, memset_glibc_stm4_wrapper },
+    { "Raspbian arm-mem memset (original stm4 version)", 0, memset_raspbian_stm4_wrapper },
+    { "Liberty Global memset (stm4)", 0, memset_lgi_stm4_wrapper },
+    { "Liberty Global memset (stm8)", 0, memset_lgi_stm8_wrapper },
+    { "uclibc memset (unmodified original stm2 version)", 0, memset_uclibc_stm2_wrapper },
+    { "bionic memset (unmodified original stm8 version)", 0, memset_bionic_stm8_wrapper },
+#endif
     { "standard memset", 0, memset_wrapper },
+    { "standard memcpy", 0, memcpy_wrapper },
     { NULL, 0, NULL }
 };
 

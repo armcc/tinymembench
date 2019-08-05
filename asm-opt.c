@@ -234,8 +234,9 @@ static bench_info arm_neon[] =
     { "VFP copy", 0, aligned_block_copy_vfp },
     { "VFP 2-pass copy", 1, aligned_block_copy_vfp },
     { "ARM fill (STRD)", 0, aligned_block_fill_strd_armv5te },
-    { "ARM fill (STM with 8 registers)", 0, aligned_block_fill_stm8_armv4 },
+    { "ARM fill (STM with 2 registers)", 0, aligned_block_fill_stm2_armv4 },
     { "ARM fill (STM with 4 registers)", 0, aligned_block_fill_stm4_armv4 },
+    { "ARM fill (STM with 8 registers)", 0, aligned_block_fill_stm8_armv4 },
     { "ARM copy prefetched (incr pld)", 0, aligned_block_copy_incr_armv5te },
     { "ARM copy prefetched (wrap pld)", 0, aligned_block_copy_wrap_armv5te },
     { "ARM 2-pass copy prefetched (incr pld)", 1, aligned_block_copy_incr_armv5te },
@@ -248,8 +249,9 @@ static bench_info arm_v5te_vfp[] =
     { "VFP copy", 0, aligned_block_copy_vfp },
     { "VFP 2-pass copy", 1, aligned_block_copy_vfp },
     { "ARM fill (STRD)", 0, aligned_block_fill_strd_armv5te },
-    { "ARM fill (STM with 8 registers)", 0, aligned_block_fill_stm8_armv4 },
+    { "ARM fill (STM with 2 registers)", 0, aligned_block_fill_stm2_armv4 },
     { "ARM fill (STM with 4 registers)", 0, aligned_block_fill_stm4_armv4 },
+    { "ARM fill (STM with 8 registers)", 0, aligned_block_fill_stm8_armv4 },
     { "ARM copy prefetched (incr pld)", 0, aligned_block_copy_incr_armv5te },
     { "ARM copy prefetched (wrap pld)", 0, aligned_block_copy_wrap_armv5te },
     { "ARM 2-pass copy prefetched (incr pld)", 1, aligned_block_copy_incr_armv5te },
@@ -260,8 +262,9 @@ static bench_info arm_v5te_vfp[] =
 static bench_info arm_v5te[] =
 {
     { "ARM fill (STRD)", 0, aligned_block_fill_strd_armv5te },
-    { "ARM fill (STM with 8 registers)", 0, aligned_block_fill_stm8_armv4 },
+    { "ARM fill (STM with 2 registers)", 0, aligned_block_fill_stm2_armv4 },
     { "ARM fill (STM with 4 registers)", 0, aligned_block_fill_stm4_armv4 },
+    { "ARM fill (STM with 8 registers)", 0, aligned_block_fill_stm8_armv4 },
     { "ARM copy prefetched (incr pld)", 0, aligned_block_copy_incr_armv5te },
     { "ARM copy prefetched (wrap pld)", 0, aligned_block_copy_wrap_armv5te },
     { "ARM 2-pass copy prefetched (incr pld)", 1, aligned_block_copy_incr_armv5te },
@@ -271,8 +274,9 @@ static bench_info arm_v5te[] =
 
 static bench_info arm_v4[] =
 {
-    { "ARM fill (STM with 8 registers)", 0, aligned_block_fill_stm8_armv4 },
+    { "ARM fill (STM with 2 registers)", 0, aligned_block_fill_stm2_armv4 },
     { "ARM fill (STM with 4 registers)", 0, aligned_block_fill_stm4_armv4 },
+    { "ARM fill (STM with 8 registers)", 0, aligned_block_fill_stm8_armv4 },
     { NULL, 0, NULL }
 };
 
