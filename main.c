@@ -495,6 +495,7 @@ int main(void)
 
     free(poolbuf);
 
+#if 0
     printf("\n");
     printf("==========================================================================\n");
     printf("== Memory latency test                                                  ==\n");
@@ -522,6 +523,7 @@ int main(void)
     {
         latency_bench(latbench_size, latbench_count, 0);
     }
+#endif
 
     return 0;
 }
