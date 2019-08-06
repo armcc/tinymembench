@@ -237,6 +237,169 @@ void bandwidth_bench(int64_t *dstbuf, int64_t *srcbuf, int64_t *tmpbuf,
     }
 }
 
+void memset_bench(int64_t *dstbuf)
+{
+    int i, j, k, innerloops = 10, loops = 8000;
+
+    memcpy (dstbuf, ((unsigned char *) dstbuf) + 256, 256);
+
+#if 0
+#define OFFSET (4 + k)
+#else
+#define OFFSET (4)
+#endif
+
+#ifdef __arm__
+
+    for (i = 0; i <= 128; i++)
+    {
+        double start, end;
+        double t1, t2, t3;
+        int repeat;
+        int repeat_limit = (i < 100) ? 6 : 4;
+
+        while (1)
+        {
+            /****************************************************************/
+
+            for (repeat = 0; repeat < repeat_limit; repeat++)
+            {
+                start = gettime();
+                for (j = 0; j < loops; j++)
+                    for (k = 0; k < innerloops; k++)
+                        memset (((unsigned char *) dstbuf) + OFFSET, 0x12, i);
+                end = gettime();
+
+                if (repeat == 0)
+                    t1 = end - start;
+                else
+                    if ((end - start) < t1)
+                        t1 = end - start;
+            }
+
+            /****************************************************************/
+
+            for (repeat = 0; repeat < repeat_limit; repeat++)
+            {
+                start = gettime();
+                for (j = 0; j < loops; j++)
+                    for (k = 0; k < innerloops; k++)
+                        memset_lgi_stm4 (((unsigned char *) dstbuf) + OFFSET, 0x12, i);
+                end = gettime();
+
+                if (repeat == 0)
+                    t2 = end - start;
+                else
+                    if ((end - start) < t2)
+                        t2 = end - start;
+            }
+
+            /****************************************************************/
+
+            for (repeat = 0; repeat < repeat_limit; repeat++)
+            {
+                start = gettime();
+                for (j = 0; j < loops; j++)
+                    for (k = 0; k < innerloops; k++)
+                        memset_lgi_stm8 (((unsigned char *) dstbuf) + OFFSET, 0x12, i);
+                end = gettime();
+
+                if (repeat == 0)
+                    t3 = end - start;
+                else
+                    if ((end - start) < t3)
+                        t3 = end - start;
+            }
+
+            /****************************************************************/
+
+            if ((i == 0) && ((t1 < 0.02) || (t2 < 0.02) || (t3 < 0.02)))
+            {
+                loops *= 2;
+                continue;
+            }
+
+            break;
+        }
+
+        if (i == 0)
+        {
+            /*
+               How long it takes to run with a count of 0 bytes isn't very
+               interesting... however it can give a clue about targets with
+               very low precision timers (e.g. if results printed here always
+               show exact multiples of 1000's or 10000's of uSec then the code
+               should probably be changed to run tests for much longer...).
+            */
+            printf(" memset %4d ; %8.1f ; %8.1f ; %8.1f ; ( uSec )\n", i, t1 * 100000.0, t2 * 100000.0, t3 * 100000.0);
+        }
+        else
+        {
+            /*
+               Note: tinymembench treats 1 MB as 1000000 bytes.
+               For consistency, do the same here...
+            */
+            printf(" memset %4d ; %8.1f ; %8.1f ; %8.1f ; ( MB/s )\n", i,
+                   (loops * innerloops * i) / (t1 * 1000000.0),
+                   (loops * innerloops * i) / (t2 * 1000000.0),
+                   (loops * innerloops * i) / (t3 * 1000000.0));
+        }
+
+        if ((i == 100) || (i == 200))
+            loops /= 2;
+    }
+
+#else
+
+    for (i = 0; i <= 128; i++)
+    {
+        double start, end;
+        double t1;
+        int repeat;
+        int repeat_limit = 6;
+
+        while (1)
+        {
+            for (repeat = 0; repeat < repeat_limit; repeat++)
+            {
+                start = gettime();
+                for (j = 0; j < loops; j++)
+                    for (k = 0; k < innerloops; k++)
+                        memset (((unsigned char *) dstbuf) + OFFSET, 0x12, i);
+                end = gettime();
+
+                if (repeat == 0)
+                    t1 = end - start;
+                else
+                    if ((end - start) < t1)
+                        t1 = end - start;
+            }
+
+            if ((i == 0) && (t1 < 0.02))
+            {
+                loops *= 2;
+                continue;
+            }
+
+            break;
+        }
+
+        if (i == 0)
+            printf(" memset %4d : %8.0f us\n", i, t1 * 1000000.0);
+        else
+            /*
+               Note: tinymembench treats 1 MB as 1000000 bytes.
+               For consistency, do the same here...
+            */
+            printf(" memset %4d : %8.0f us (%8.1f MB/s)\n", i, t1 * 1000000.0, (loops * innerloops * i) / (t1 * 1000000.0));
+    }
+
+#endif
+
+    printf ("\n");
+//  printf (" memset_bench() loops: %d\n", loops);
+}
+
 static void __attribute__((noinline)) random_read_test(char *zerobuffer,
                                                        int count, int nbits)
 {
@@ -517,7 +680,7 @@ int latency_bench(int size, int count, int use_hugepage)
     return 1;
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
     int latbench_size = SIZE * 2, latbench_count = LATBENCH_COUNT;
     int64_t *srcbuf, *dstbuf, *tmpbuf;
@@ -531,6 +694,12 @@ int main(void)
                                             (void **)&dstbuf, bufsize,
                                             (void **)&tmpbuf, BLOCKSIZE,
                                             NULL, 0);
+
+    if ((argc > 1) && (strcmp(argv[1], "--memset") == 0)) {
+        memset_bench(dstbuf);
+        return 0;
+    }
+
     printf("\n");
     printf("==========================================================================\n");
     printf("== Memory bandwidth tests                                               ==\n");
