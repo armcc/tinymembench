@@ -146,6 +146,8 @@ void *memset_bionic_stm8(void *s, int c, size_t n);
 void *memset_lgi_stm4(void *s, int c, size_t n);
 void *memset_lgi_stm8(void *s, int c, size_t n);
 void *memset_raspbian_stm4(void *s, int c, size_t n);
+void *memset_linuxkernel_stm4(void *s, int c, size_t n);
+void *memset_linuxkernel_stm8(void *s, int c, size_t n);
 
 void memset_glibc_stm2_wrapper(int64_t *dst, int64_t *src, int size)
 {
@@ -187,6 +189,16 @@ void memset_raspbian_stm4_wrapper(int64_t *dst, int64_t *src, int size)
     memset_raspbian_stm4(dst, src[0], size);
 }
 
+void memset_linuxkernel_stm4_wrapper(int64_t *dst, int64_t *src, int size)
+{
+    memset_linuxkernel_stm4(dst, src[0], size);
+}
+
+void memset_linuxkernel_stm8_wrapper(int64_t *dst, int64_t *src, int size)
+{
+    memset_linuxkernel_stm8(dst, src[0], size);
+}
+
 #endif
 
 static bench_info c_benchmarks[] =
@@ -217,6 +229,8 @@ static bench_info libc_benchmarks[] =
     { "Liberty Global memset (stm8)", 0, memset_lgi_stm8_wrapper },
     { "uclibc memset (unmodified original stm2 version)", 0, memset_uclibc_stm2_wrapper },
     { "bionic memset (unmodified original stm8 version)", 0, memset_bionic_stm8_wrapper },
+    { "Linux kernel memset (default stm4 version)", 0, memset_linuxkernel_stm4_wrapper },
+    { "Linux kernel memset (little used CALGN stm8 version)", 0, memset_linuxkernel_stm8_wrapper },
 #endif
     { "standard memset", 0, memset_wrapper },
     { "standard memcpy", 0, memcpy_wrapper },
@@ -301,7 +315,7 @@ void memset_bench(int64_t *dstbuf)
                 start = gettime();
                 for (j = 0; j < loops; j++)
                     for (k = 0; k < innerloops; k++)
-                        memset_lgi_stm8 (((unsigned char *) dstbuf) + OFFSET, 0x12, i);
+                        memset_linuxkernel_stm4 (((unsigned char *) dstbuf) + OFFSET, 0x12, i);
                 end = gettime();
 
                 if (repeat == 0)
