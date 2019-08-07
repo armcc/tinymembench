@@ -239,7 +239,7 @@ void bandwidth_bench(int64_t *dstbuf, int64_t *srcbuf, int64_t *tmpbuf,
 
 void memset_bench(int64_t *dstbuf)
 {
-    int i, j, k, innerloops = 10, loops = 8000;
+    int i, j, k, innerloops = 16, loops = 8000;
 
     memcpy (dstbuf, ((unsigned char *) dstbuf) + 256, 256);
 
