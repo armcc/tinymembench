@@ -148,6 +148,7 @@ void *memset_lgi_stm8(void *s, int c, size_t n);
 void *memset_raspbian_stm4(void *s, int c, size_t n);
 void *memset_linuxkernel_stm4(void *s, int c, size_t n);
 void *memset_linuxkernel_stm8(void *s, int c, size_t n);
+void *memcpy_raspbian(void *dest, const void *src, size_t n);
 
 void memset_glibc_stm2_wrapper(int64_t *dst, int64_t *src, int size)
 {
@@ -199,6 +200,11 @@ void memset_linuxkernel_stm8_wrapper(int64_t *dst, int64_t *src, int size)
     memset_linuxkernel_stm8(dst, src[0], size);
 }
 
+void memcpy_raspbian_wrapper(int64_t *dst, int64_t *src, int size)
+{
+    memcpy_raspbian(dst, src, size);
+}
+
 #endif
 
 static bench_info c_benchmarks[] =
@@ -234,6 +240,9 @@ static bench_info libc_benchmarks[] =
 #endif
     { "standard memset", 0, memset_wrapper },
     { "standard memcpy", 0, memcpy_wrapper },
+#ifdef __arm__
+    { "Raspbian arm-mem memcpy", 0, memcpy_raspbian_wrapper },
+#endif
     { NULL, 0, NULL }
 };
 
