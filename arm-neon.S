@@ -469,6 +469,19 @@ asm_function aligned_block_copy_vfp
 
 	.syntax unified
 
+/****************************************************************************/
+/****************************************************************************/
+
+	.global barrier_indirect_armv6
+	.type barrier_indirect_armv6,%function
+
+barrier_indirect_armv6:
+	mcr p15,0,r0,c7,c10,5
+	bx lr
+
+/****************************************************************************/
+/****************************************************************************/
+
 	.global memset_glibc_stm2
 	.type memset_glibc_stm2,%function
 

@@ -423,6 +423,114 @@ void memset_bench(int64_t *dstbuf)
 //  printf (" memset_bench() loops: %d\n", loops);
 }
 
+#ifdef __arm__
+
+#include <sys/auxv.h>
+
+#if (__ARM_ARCH >= 7)
+static inline void barrier_armv7 (void)
+{
+    __asm__ __volatile__ ("dmb ish" : : : "memory");
+}
+#endif
+
+#if (__ARM_ARCH >= 6) && ! __thumb__
+static inline void barrier_armv6 (void)
+{
+    __asm__ __volatile__ ("mcr p15,0,%0,c7,c10,5" : : "r"(0) : "memory");
+}
+#endif
+
+/*
+   __arm_assisted_full_barrier() macros are copied from glibc sysdeps/unix/sysv/linux/arm/atomic-machine.h
+   Putting the kuser barrier address (ie 0xffff0fa0) setup in the assembler and
+   therefore included in every iteration of the loop makes them slighly slower
+   than the musl based barrier_indirect() (where the constant can be setup once
+   outside the inner loop). For normal usage (ie not called repeatedly within a
+   tight loop) setting up the constant from the assembler isn't a problem.
+*/
+/* If the compiler doesn't provide a primitive, we'll use this macro
+   to get assistance from the kernel.  */
+#ifdef __thumb2__
+# define __arm_assisted_full_barrier() \
+     __asm__ __volatile__                                                     \
+             ("movw\tip, #0x0fa0\n\t"                                         \
+              "movt\tip, #0xffff\n\t"                                         \
+              "blx\tip"                                                       \
+              : : : "ip", "lr", "cc", "memory");
+#else
+# define __arm_assisted_full_barrier() \
+     __asm__ __volatile__                                                     \
+             ("mov\tip, #0xffff0fff\n\t"                                      \
+              "mov\tlr, pc\n\t"                                               \
+              "add\tpc, ip, #(0xffff0fa0 - 0xffff0fff)"                       \
+              : : : "ip", "lr", "cc", "memory");
+#endif
+
+/* Based on musl a_barrier() + tweaks */
+static inline void barrier_indirect (unsigned long barrier_ptr)
+{
+    register unsigned long ip __asm__("ip") = barrier_ptr;
+    __asm__ __volatile__("blx ip" : "+r"(ip) : : "memory", "cc", "lr" );
+}
+
+void barrier_indirect_armv6 (void);
+
+void barrier_bench (void)
+{
+    char *platform;
+    int i, loops = 10000;
+    double start, end;
+
+    platform = (char *) getauxval(AT_PLATFORM);
+
+    printf ("\nPlatform: %s\n\n", platform);
+
+    /****************************************************************/
+
+#if (__ARM_ARCH >= 7)
+    if (platform[1] == '7') {
+        start = gettime();
+        for (i = 0; i < loops; i++)
+            barrier_armv7();
+        end = gettime();
+        printf ("ARMv7 (inline)   : %4.1f ns\n", ((end - start) * ((1000.0 * 1000.0 * 1000.0) / loops)));
+    }
+#endif
+
+#if (__ARM_ARCH >= 6) && ! __thumb__
+    if ((platform[1] == '7') || (platform[1] == '6')) {
+        start = gettime();
+        for (i = 0; i < loops; i++)
+            barrier_armv6();
+        end = gettime();
+        printf ("ARMv6 (inline)   : %4.1f ns\n", ((end - start) * ((1000.0 * 1000.0 * 1000.0) / loops)));
+
+        start = gettime();
+        for (i = 0; i < loops; i++)
+            barrier_indirect ((unsigned long) barrier_indirect_armv6);
+        end = gettime();
+        printf ("ARMv6 (indirect) : %4.1f ns\n", ((end - start) * ((1000.0 * 1000.0 * 1000.0) / loops)));
+    }
+#endif
+
+    if (1) {
+        start = gettime();
+        for (i = 0; i < loops; i++)
+            __arm_assisted_full_barrier();
+        end = gettime();
+        printf ("kuser (inline)   : %4.1f ns\n", ((end - start) * ((1000.0 * 1000.0 * 1000.0) / loops)));
+
+        start = gettime();
+        for (i = 0; i < loops; i++)
+            barrier_indirect (0xffff0fa0);
+        end = gettime();
+        printf ("kuser (indirect) : %4.1f ns\n", ((end - start) * ((1000.0 * 1000.0 * 1000.0) / loops)));
+    }
+}
+
+#endif
+
 static void __attribute__((noinline)) random_read_test(char *zerobuffer,
                                                        int count, int nbits)
 {
@@ -722,6 +830,15 @@ int main(int argc, char *argv[])
         memset_bench(dstbuf);
         return 0;
     }
+
+#ifdef __arm__
+
+    if ((argc > 1) && (strcmp(argv[1], "--barrier") == 0)) {
+        barrier_bench();
+        return 0;
+    }
+
+#endif
 
     printf("\n");
     printf("==========================================================================\n");
