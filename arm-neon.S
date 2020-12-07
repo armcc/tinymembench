@@ -610,8 +610,8 @@ memset_uclibc_stm2:
 	orr	r1, r1, r1, lsl #16
 
 1:	tst	r3, #3		@ aligned yet?
-	strbne	r1, [r3], $1
-	subne	r2, r2, $1
+	strbne	r1, [r3], #1
+	subne	r2, r2, #1
 	bne	1b
 
 	mov	ip, r1
@@ -641,13 +641,13 @@ memset_uclibc_stm2:
 	rsb	r2, r2, $7
 	add	pc, pc, r2, lsl $2
 	nop
-	strb	r1, [r3], $1
-	strb	r1, [r3], $1
-	strb	r1, [r3], $1
-	strb	r1, [r3], $1
-	strb	r1, [r3], $1
-	strb	r1, [r3], $1
-	strb	r1, [r3], $1
+	strb	r1, [r3], #1
+	strb	r1, [r3], #1
+	strb	r1, [r3], #1
+	strb	r1, [r3], #1
+	strb	r1, [r3], #1
+	strb	r1, [r3], #1
+	strb	r1, [r3], #1
 
 	bx	lr
 
